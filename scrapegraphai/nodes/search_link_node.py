@@ -87,15 +87,18 @@ class SearchLinkNode(BaseNode):
             Please list only valid URLs and make sure to err on the side of inclusion if it's uncertain 
             whether the content at the link is directly relevant.
 
+            The output should be a dictionary whose key is the link and whose value is a short description or a slug relevant 
+            for the link; if no such description or slug can be learnt from the scraped content, just leave it null
+
             Output only a list of relevant links in the format:
-            [
-                "link1",
-                "link2",
-                "link3",
+            {
+                "link1": "description link 1",
+                "link2": "description link 2",
+                "link3": "description link 3",
                 .
                 .
                 .
-            ]
+            }
             """
         relevant_links = []
 
