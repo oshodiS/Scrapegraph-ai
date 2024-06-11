@@ -39,7 +39,7 @@ class SearchLinkNode(BaseNode):
         input: str,
         output: List[str],
         node_config: Optional[dict] = None,
-        node_name: str = "GenerateLinks",
+        node_name: str = "SearchRelevantLinkNode",
     ):
         super().__init__(node_name, "node", input, output, 1, node_config)
 
@@ -93,7 +93,6 @@ class SearchLinkNode(BaseNode):
             for the link; if no such description or slug can be learnt from the scraped content, just leave it null
 
             """
-         
         relevant_links = []
 
         for i, chunk in enumerate(
@@ -114,5 +113,5 @@ class SearchLinkNode(BaseNode):
                  "user_prompt": user_prompt}
             )
             relevant_links += answer
-        state.update({self.output[0]: relevant_links})
+        state.update({"relevant_links": relevant_links})
         return state
