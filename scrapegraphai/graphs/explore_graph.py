@@ -1,14 +1,12 @@
-""" 
+"""
 ExploreGraph Module
 """
 
-from copy import copy, deepcopy
 from typing import Optional
 from pydantic import BaseModel
 
 from .base_graph import BaseGraph
 from .abstract_graph import AbstractGraph
-from .smart_scraper_graph import SmartScraperGraph
 
 from ..nodes import (
     FetchNode,
@@ -20,56 +18,50 @@ from ..nodes import (
 
 
 class ExploreGraph(AbstractGraph):
-    """ 
-    ExploreGraph is a scraping pipeline that searches the internet for answers to a given prompt.
-    It only requires a user prompt to search the internet and generate an answer.
+    """
+    SmartScraper is a scraping pipeline that automates the process of 
+    extracting information from web pages
+    using a natural language model to interpret and answer prompts.
 
     Attributes:
-        prompt (str): The user prompt to search the internet.
-        llm_model (dict): The configuration for the language model.
-        embedder_model (dict): The configuration for the embedder model.
-        headless (bool): A flag to run the browser in headless mode.
-        verbose (bool): A flag to display the execution information.
-        model_token (int): The token limit for the language model.
+        prompt (str): The prompt for the graph.
+        source (str): The source of the graph.
+        config (dict): Configuration parameters for the graph.
+        schema (str): The schema for the graph output.
+        llm_model: An instance of a language model client, configured for generating answers.
+        embedder_model: An instance of an embedding model client, 
+        configured for generating embeddings.
+        verbose (bool): A flag indicating whether to show print statements during execution.
+        headless (bool): A flag indicating whether to run the graph in headless mode.
 
     Args:
-        prompt (str): The user prompt to search the internet.
+        prompt (str): The prompt for the graph.
+        source (str): The source of the graph.
         config (dict): Configuration parameters for the graph.
-        schema (Optional[str]): The schema for the graph output.
+        schema (str): The schema for the graph output.
 
     Example:
-        >>> search_graph = ExploreGraph(
-        ...     "What is Chioggia famous for?",
+        >>> smart_scraper = ExploreGraph(
+        ...     "List me all the attractions in Chioggia.",
+        ...     "https://en.wikipedia.org/wiki/Chioggia",
         ...     {"llm": {"model": "gpt-3.5-turbo"}}
         ... )
-        >>> result = search_graph.run()
+        >>> result = smart_scraper.run()
+        )
     """
 
-    def __init__(self, prompt: str, config: dict, schema: Optional[BaseModel] = None):
+    def __init__(self, prompt: str, source: str, config: dict, schema: Optional[BaseModel] = None):
+        super().__init__(prompt, config, source, schema)
 
-        self.max_results = config.get("max_results", 3)
-
-        if all(isinstance(value, str) for value in config.values()):
-            self.copy_config = copy(config)
-        else:
-            self.copy_config = deepcopy(config)
-        
-        self.copy_schema = deepcopy(schema)
-
-        super().__init__(prompt, config, schema)
+        self.input_key = "url" if source.startswith("http") else "local_dir"
 
     def _create_graph(self) -> BaseGraph:
         """
-        Creates the graph of nodes representing the workflow for web scraping and searching.
+        Creates the graph of nodes representing the workflow for web scraping.
 
         Returns:
-            BaseGraph: A graph instance representing the web scraping and searching workflow.
+            BaseGraph: A graph instance representing the web scraping workflow.
         """
-
-        # ************************************************
-        # Create a SmartScraperGraph instance
-        # ************************************************
-
         fetch_node = FetchNode(
             input="url | local_dir",
             output=["doc", "link_urls", "img_urls"],
@@ -100,7 +92,7 @@ class ExploreGraph(AbstractGraph):
                 "schema": self.schema,
             }
         )
-
+      
         search_link_node = SearchLinkNode(
             input="doc",
             output=[{"link": "description"}],
@@ -114,25 +106,28 @@ class ExploreGraph(AbstractGraph):
                 fetch_node,
                 parse_node,
                 rag_node,
+                search_link_node,
                 generate_answer_node,
             ],
+            
             edges=[
                 (fetch_node, parse_node),
                 (parse_node, rag_node),
-                (rag_node, generate_answer_node),
-                (generate_answer_node, search_link_node)
+                (rag_node, search_link_node),
+                (search_link_node, generate_answer_node)
             ],
             entry_point=fetch_node
         )
 
     def run(self) -> str:
         """
-        Executes the web scraping and searching process.
+        Executes the scraping process and returns the answer to the prompt.
 
         Returns:
             str: The answer to the prompt.
         """
-        inputs = {"user_prompt": self.prompt}
+
+        inputs = {"user_prompt": self.prompt, self.input_key: self.source}
         self.final_state, self.execution_info = self.graph.execute(inputs)
 
         return self.final_state.get("answer", "No answer found.")

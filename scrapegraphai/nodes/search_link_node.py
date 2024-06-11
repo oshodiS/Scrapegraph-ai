@@ -67,17 +67,15 @@ class SearchLinkNode(BaseNode):
 
         self.logger.info(f"--- Executing {self.node_name} Node ---")
 
-        # Interpret input keys based on the provided input expression
-        input_keys = self.get_input_keys(state)
 
-        user_prompt = state[input_keys[0]]
-        parsed_content_chunks = state[input_keys[1]]
+        user_prompt = state.get("user_prompt")
+        links = state.get("link_urls")
+        parsed_content_chunks = state.get("parsed_doc")
         output_parser = JsonOutputParser()
 
         prompt_relevant_links = """
             You are a website scraper and you have just scraped the following content from a website.
-            Content: {content}
-            
+
             You are now tasked with identifying all hyper links within the content that are potentially
             relevant to the user task: {user_prompt}
             
@@ -87,19 +85,15 @@ class SearchLinkNode(BaseNode):
             Please list only valid URLs and make sure to err on the side of inclusion if it's uncertain 
             whether the content at the link is directly relevant.
 
+            This is the list of links: {links}
+
+            Content: {content}
+
             The output should be a dictionary whose key is the link and whose value is a short description or a slug relevant 
             for the link; if no such description or slug can be learnt from the scraped content, just leave it null
 
-            Output only a list of relevant links in the format:
-            {
-                "link1": "description link 1",
-                "link2": "description link 2",
-                "link3": "description link 3",
-                .
-                .
-                .
-            }
             """
+         
         relevant_links = []
 
         for i, chunk in enumerate(
@@ -111,12 +105,13 @@ class SearchLinkNode(BaseNode):
         ):
             merge_prompt = PromptTemplate(
                 template=prompt_relevant_links,
-                input_variables=["content", "user_prompt"],
+                input_variables=["content", "user_prompt", "links"],
             )
             merge_chain = merge_prompt | self.llm_model | output_parser
             # merge_chain = merge_prompt | self.llm_model
             answer = merge_chain.invoke(
-                {"content": chunk.page_content, "user_prompt": user_prompt}
+                {"content": chunk, "links": links,
+                 "user_prompt": user_prompt}
             )
             relevant_links += answer
         state.update({self.output[0]: relevant_links})
