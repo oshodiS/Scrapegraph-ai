@@ -28,9 +28,9 @@ graph_config = {
 # ************************************************
 
 smart_scraper_graph = ExploreGraph(
-    prompt="List me all the titles",
+    prompt="List me all the projects with their descriptions",
     # also accepts a string with the already downloaded HTML code
-    source="https://www.wired.com/",
+    source="https://perinim.github.io/projects",
     config=graph_config
 )
 

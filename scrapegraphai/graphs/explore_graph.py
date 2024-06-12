@@ -92,7 +92,7 @@ class ExploreGraph(AbstractGraph):
                 "schema": self.schema,
             }
         )
-      
+    
         search_link_node = SearchLinkNode(
             input="doc",
             output=[{"link": "description"}],
@@ -109,12 +109,12 @@ class ExploreGraph(AbstractGraph):
                 search_link_node,
                 generate_answer_node,
             ],
-            
+           
             edges=[
                 (fetch_node, parse_node),
                 (parse_node, rag_node),
-                (rag_node, search_link_node),
-                (search_link_node, generate_answer_node)
+                (rag_node, generate_answer_node),
+                (generate_answer_node, search_link_node)
             ],
             entry_point=fetch_node
         )

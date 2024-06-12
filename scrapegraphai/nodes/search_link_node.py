@@ -89,11 +89,14 @@ class SearchLinkNode(BaseNode):
 
             Content: {content}
 
-            The output should be a dictionary whose key is the link and whose value is a short description or a slug relevant 
+            The output should be a dictionary in YAML format whose key is the link and the value is a short description or a slug relevant 
             for the link; if no such description or slug can be learnt from the scraped content, just leave it null
-
+            EXAMPLE:
+                ENDPOINT1: description1
+                ENDPOINT2: description2
+                ...
             """
-        relevant_links = []
+        relevant_links = {}
 
         for i, chunk in enumerate(
             tqdm(
@@ -112,6 +115,6 @@ class SearchLinkNode(BaseNode):
                 {"content": chunk, "links": links,
                  "user_prompt": user_prompt}
             )
-            relevant_links += answer
+            relevant_links.update(answer)
         state.update({"relevant_links": relevant_links})
         return state
