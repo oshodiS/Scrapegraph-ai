@@ -19,40 +19,37 @@ from ..nodes import (
 
 class ExploreGraph(AbstractGraph):
     """
-    SmartScraper is a scraping pipeline that automates the process of 
-    extracting information from web pages
-    using a natural language model to interpret and answer prompts.
+    ExploreGraph is a web scraping pipeline that automates the extraction of information
+    from web pages using natural language models to interpret and respond to prompts.
 
     Attributes:
         prompt (str): The prompt for the graph.
-        source (str): The source of the graph.
+        source (str): The source URL or local directory for the graph.
         config (dict): Configuration parameters for the graph.
         schema (str): The schema for the graph output.
-        llm_model: An instance of a language model client, configured for generating answers.
-        embedder_model: An instance of an embedding model client, 
-        configured for generating embeddings.
+        llm_model: An instance of a language model client for generating answers.
+        embedder_model: An instance of an embedding model client for generating embeddings.
         verbose (bool): A flag indicating whether to show print statements during execution.
         headless (bool): A flag indicating whether to run the graph in headless mode.
 
     Args:
         prompt (str): The prompt for the graph.
-        source (str): The source of the graph.
+        source (str): The source URL or local directory for the graph.
         config (dict): Configuration parameters for the graph.
-        schema (str): The schema for the graph output.
+        schema (Optional[BaseModel]): The schema for the graph output.
 
     Example:
-        >>> smart_scraper = ExploreGraph(
+        >>> explore_graph = ExploreGraph(
         ...     "List me all the attractions in Chioggia.",
         ...     "https://en.wikipedia.org/wiki/Chioggia",
         ...     {"llm": {"model": "gpt-3.5-turbo"}}
         ... )
-        >>> result = smart_scraper.run()
-        )
+        >>> result = explore_graph.run()
+        >>> print(result)
     """
 
     def __init__(self, prompt: str, source: str, config: dict, schema: Optional[BaseModel] = None):
         super().__init__(prompt, config, source, schema)
-
         self.input_key = "url" if source.startswith("http") else "local_dir"
 
     def _create_graph(self) -> BaseGraph:
@@ -109,7 +106,6 @@ class ExploreGraph(AbstractGraph):
                 search_link_node,
                 generate_answer_node,
             ],
-           
             edges=[
                 (fetch_node, parse_node),
                 (parse_node, rag_node),
@@ -126,7 +122,6 @@ class ExploreGraph(AbstractGraph):
         Returns:
             str: The answer to the prompt.
         """
-
         inputs = {"user_prompt": self.prompt, self.input_key: self.source}
         self.final_state, self.execution_info = self.graph.execute(inputs)
 

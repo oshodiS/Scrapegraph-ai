@@ -51,7 +51,6 @@ class SearchGraph(AbstractGraph):
             self.copy_config = copy(config)
         else:
             self.copy_config = deepcopy(config)
-        
         self.copy_schema = deepcopy(schema)
 
         super().__init__(prompt, config, schema)

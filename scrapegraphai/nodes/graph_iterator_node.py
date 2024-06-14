@@ -5,7 +5,7 @@ GraphIterator Module
 import asyncio
 import copy
 from typing import List, Optional
-
+from ..graphs.explore_graph import ExploreGraph
 from tqdm.asyncio import tqdm
 
 from ..utils.logging import get_logger

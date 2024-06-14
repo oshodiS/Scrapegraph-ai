@@ -20,3 +20,5 @@ from .generate_answer_pdf_node import GenerateAnswerPDFNode
 from .graph_iterator_node import GraphIteratorNode
 from .merge_answers_node import MergeAnswersNode
 from .generate_answer_omni_node import GenerateAnswerOmniNode
+from .merge_explore_graphs_node import MergeExploreGraphsNode
+from .rerank_node import ReRankNode
