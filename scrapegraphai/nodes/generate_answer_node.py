@@ -45,7 +45,7 @@ class GenerateAnswerNode(BaseNode):
         node_name: str = "GenerateAnswer",
     ):
         super().__init__(node_name, "node", input, output, 2, node_config)
-      
+
         self.llm_model = node_config["llm_model"]
 
         if isinstance(node_config["llm_model"], Ollama):

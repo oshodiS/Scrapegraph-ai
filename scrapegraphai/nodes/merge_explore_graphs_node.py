@@ -8,15 +8,9 @@ from typing import List, Optional
 # Imports from Langchain
 from langchain.prompts import PromptTemplate
 from langchain_core.output_parsers import JsonOutputParser
-from langchain_core.runnables import RunnableParallel
 from tqdm import tqdm
-
-
-from ..utils.logging import get_logger
 from ..models import Ollama
-# Imports from the library
 from .base_node import BaseNode
-from ..helpers import template_chunks, template_no_chunks, template_merge
 
 
 class MergeExploreGraphsNode(BaseNode):
@@ -42,10 +36,10 @@ class MergeExploreGraphsNode(BaseNode):
         input: str,
         output: List[str],
         node_config: Optional[dict] = None,
-        node_name: str = "GenerateAnswer",
+        node_name: str = "MergeExploreGraph",
     ):
         super().__init__(node_name, "node", input, output, 2, node_config)
-      
+
         self.llm_model = node_config["llm_model"]
 
         if isinstance(node_config["llm_model"], Ollama):
@@ -74,6 +68,20 @@ class MergeExploreGraphsNode(BaseNode):
 
         self.logger.info(f"--- Executing {self.node_name} Node ---")
 
-       
-        state.update({self.output[0]: "answaer"})
+        template_answer = ""
+
+        answers = str(state.get("answer"))
+        relevant_links = str(state.get("relevant_links"))
+        answer = {}
+
+        merge_prompt = PromptTemplate(
+                template=template_answer,
+                 #input_variables=["context", "question"],
+                 #partial_variables={"format_instructions": format_instructions},
+            )
+
+         #answer = merge_prompt.invoke({"question": user_prompt})
+
+        state.update({"relevant_links": "TODO"})
+        state.update({"answer": "TODO"})
         return state
