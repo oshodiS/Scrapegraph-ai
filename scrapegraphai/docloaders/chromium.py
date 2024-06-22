@@ -1,10 +1,13 @@
+"""
+ChromiumLoader module
+"""
 import asyncio
 from typing import Any, AsyncIterator, Iterator, List, Optional
 
 from langchain_community.document_loaders.base import BaseLoader
 from langchain_core.documents import Document
 
-from ..utils import Proxy, dynamic_import, get_logger, parse_or_search_proxy
+from ..utils import Proxy, dynamic_import, get_logger, parse_or_search_proxy, transform_link
 
 
 logger = get_logger("web-loader")
@@ -55,7 +58,7 @@ class ChromiumLoader(BaseLoader):
         self.browser_config = kwargs
         self.headless = headless
         self.proxy = parse_or_search_proxy(proxy) if proxy else None
-        self.urls = urls
+        self.urls = [transform_link(url) for url in urls]
         self.load_state = load_state
 
     async def ascrape_playwright(self, url: str) -> str:
