@@ -1,0 +1,10 @@
+repos:
+  - repo: local
+    hooks:
+    - id: repo-agent
+      name: RepoAgent
+      entry: repoagent
+      language: system
+      pass_filenames: false # prevent from passing filenames to the hook
+      # You can specify the file types that trigger the hook, but currently only python is supported.
+      types: [python]
